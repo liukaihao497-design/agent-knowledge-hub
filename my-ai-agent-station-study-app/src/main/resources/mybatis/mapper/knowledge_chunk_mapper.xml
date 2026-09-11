@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lkh.infrastructure.dao.IKnowledgeChunkDao">
+    <resultMap id="row" type="com.lkh.infrastructure.dao.po.KnowledgeChunk">
+        <id column="chunk_id" property="chunkId"/>
+        <result column="document_id" property="documentId"/>
+        <result column="chunk_index" property="chunkIndex"/>
+        <result column="content" property="content"/>
+        <result column="char_count" property="charCount"/>
+        <result column="metadata" property="metadata"/>
+        <result column="ext_info" property="extInfo"/>
+        <result column="ext_remark" property="extRemark"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+    <sql id="columns">chunk_id, document_id, chunk_index, content, char_count, metadata, ext_info, ext_remark, create_time</sql>
+    <insert id="insertBatch">
+        INSERT INTO knowledge_chunk (chunk_id, document_id, chunk_index, content, char_count, metadata, ext_info, ext_remark, create_time) VALUES
+        <foreach collection="chunks" item="chunk" separator=",">
+            (#{chunk.chunkId}, #{chunk.documentId}, #{chunk.chunkIndex}, #{chunk.content}, #{chunk.charCount}, #{chunk.metadata}, #{chunk.extInfo}, #{chunk.extRemark}, #{chunk.createTime})
+        </foreach>
+    </insert>
+    <select id="find" resultMap="row">
+        SELECT <include refid="columns"/> FROM knowledge_chunk WHERE chunk_id=#{chunkId}
+    </select>
+    <select id="list" resultMap="row">
+        SELECT <include refid="columns"/> FROM knowledge_chunk WHERE document_id=#{documentId}
+        ORDER BY chunk_index ASC LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM knowledge_chunk WHERE document_id=#{documentId}
+    </select>
+</mapper>

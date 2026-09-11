@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light"><meta name="theme-color" content="#f8f9f5">
+<title>Agent Station · 知识与行动</title>
+<link rel="stylesheet" href="vendor/github.min.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="workspace.css">
+<script defer src="vendor/marked.min.js"></script><script defer src="vendor/purify.min.js"></script><script defer src="vendor/highlight.min.js"></script><script defer src="app.js"></script>
+</head>
+<body>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar" aria-label="工作台导航">
+ <div class="brand-block"><div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div><div><h1>Agent Station<span class="version">03</span></h1><p class="eyebrow">知识，让行动有据可依</p></div></div>
+ <button class="new-chat-button" id="newChatButton" type="button"><span class="plus">＋</span><span>新建会话</span><kbd>Ctrl K</kbd></button>
+ <button class="nav-button" id="chatNav" type="button" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H9l-5 4Z"/><path d="M8 8h8M8 12h5"/></svg>对话工作台<span>↗</span></button>
+ <button class="nav-button" id="libraryButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h5v16H3zM10 4h4v16h-4zM16 5l4-1 3 15-4 1z"/></svg>知识库<span>↗</span></button>
+ <div class="history-heading"><span>最近会话</span><span id="historyCount">0</span></div><nav class="history-list" id="historyList" aria-label="最近会话"></nav>
+ <div class="sidebar-note"><span class="mini-book">⌑</span><strong>从资料，到答案。</strong><p>上传你的文档，让每次问答<br>都有可追溯的依据。</p><button class="text-button" id="sidebarUpload" type="button">上传第一份资料 ↗</button></div>
+ <div class="sidebar-footer"><div class="local-badge"><i></i> 历史保存在此浏览器</div><button class="text-button danger" id="clearHistoryButton" type="button">清空</button></div>
+</aside>
+<div class="mobile-backdrop" id="mobileBackdrop"></div>
+<main class="workspace">
+ <header class="topbar"><div class="topbar-title"><button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="打开导航"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div><p class="eyebrow" id="viewEyebrow">WORKSPACE / KNOWLEDGE</p><h2 id="conversationTitle">知识库问答</h2></div></div><div class="topbar-meta"><div class="connection-status" id="connectionStatus" data-state="ready"><i></i><span>就绪</span></div><button class="icon-button" id="settingsButton" type="button" aria-label="工作台设置" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></svg></button></div></header>
+ <section class="settings-panel" id="settingsPanel" aria-label="工作台设置" hidden>
+  <label class="api-field"><span>服务根地址（留空使用同源代理）</span><input id="apiUrlInput" type="url" placeholder="同源 /api/v1/…" spellcheck="false"></label>
+  <label id="maxStepField"><span>智能体最大执行步数</span><select id="maxStepSelect"><option>1</option><option>2</option><option>3</option><option selected>5</option><option>10</option></select></label>
+  <label><span>知识库最多参考片段</span><select id="topKSelect"><option>3</option><option selected>5</option><option>10</option></select></label>
+  <p class="settings-note">当前知识库每次独立提问；会话记录仅保存在浏览器。跨域服务需由后端允许访问。</p>
+ </section>
+ <div class="context-bar" id="contextBar">
+  <div class="mode-switch" role="group" aria-label="问答模式"><button type="button" data-mode="knowledge" aria-pressed="true">▤ 知识库问答</button><button type="button" data-mode="agent" aria-pressed="false">✳ 智能体任务</button></div>
+  <div class="scope-controls" id="knowledgeControls"><label for="knowledgeBaseInput">当前知识库</label><select id="knowledgeBaseInput" aria-label="当前知识库"><option value="">正在加载知识库…</option></select><button id="newBaseButton" class="small-button" type="button">新建知识库</button><button id="quickUpload" class="small-button" type="button">＋ 上传资料</button></div>
+  <div class="scope-controls" id="agentControls" hidden><label for="agentSelect">选择智能体</label><select id="agentSelect"><option value="3">Auto Agent · 3</option><option value="4" selected>Auto Agent · 4</option></select><span class="scope-caption">分析 · 执行 · 监督</span></div>
+ </div>
+ <div id="baseNotice" class="base-notice" role="status" hidden></div>
+ <section class="conversation" id="conversation" aria-label="对话内容">
+  <div class="welcome-card" id="welcomeCard">
+   <div class="welcome-copy"><p class="eyebrow" id="welcomeEyebrow">YOUR KNOWLEDGE, CONNECTED.</p><h3 id="welcomeTitle">把资料交给知识库，<br>把问题留在这里。</h3><p id="welcomeDescription">从项目文档到学习笔记，找到答案，也找到依据。</p><button class="primary-button" id="welcomeUpload" type="button">上传资料 <span>↗</span></button></div>
+   <div class="document-art" aria-hidden="true"><div class="art-sheet back"></div><div class="art-sheet"><span class="art-label">KNOWLEDGE / 001</span><span class="art-line wide"></span><span class="art-line"></span><div class="art-highlight">每个答案，都有出处。</div><span class="art-line"></span><span class="art-line short"></span><span class="art-citation">[1] 来源已关联 ↗</span></div><span class="art-star">✳</span></div>
+   <div class="welcome-bottom"><span><b>01</b> 上传资料</span><i></i><span><b>02</b> 提出问题</span><i></i><span><b>03</b> 核验来源</span></div>
+  </div>
+  <div class="messages" id="messages" aria-live="polite" aria-relevant="additions"></div>
+ </section>
+ <footer class="composer-wrap" id="composerWrap">
+  <div class="suggestions" id="suggestions" aria-label="问题示例"></div>
+  <form class="composer" id="composer"><textarea id="messageInput" rows="1" maxlength="4000" placeholder="向当前知识库提问，尽量写明主题和背景…" aria-label="消息内容"></textarea><div class="composer-actions"><span class="session-label" id="sessionLabel">KNOWLEDGE</span><button class="send-button" id="sendButton" type="submit"><span>发送</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button></div></form>
+  <p class="composer-hint" id="composerHint">Enter 发送 · Shift + Enter 换行 · 每次提问请提供完整背景</p>
+ </footer>
+ <section class="library-view" id="libraryView" aria-labelledby="libraryTitle" hidden>
+  <div class="library-hero"><div><p class="eyebrow">A PLACE FOR WHAT YOU KNOW</p><h3 id="libraryTitle">你的资料，井然有序。</h3><p>上传、查阅，再带着问题回到对话。</p></div><button class="primary-button" id="libraryUpload" type="button">＋ 上传资料</button></div>
+  <section class="base-manager" aria-label="知识库管理"><div class="base-manager-heading"><h4>我的知识库</h4><div><button id="refreshBases" class="small-button" type="button">刷新知识库</button><button id="createLibraryBase" class="primary-button" type="button">＋ 新建知识库</button></div></div><div id="baseCards" class="base-cards"></div></section>
+  <div class="library-toolbar"><div><label for="libraryBaseInput">知识库</label><select id="libraryBaseInput" aria-label="管理的知识库"><option value="">请选择知识库</option></select><button type="button" id="loadLibrary" class="small-button">加载</button></div><button class="small-button" id="askLibrary" type="button">基于此知识库提问 ↗</button></div>
+  <p class="subtle" id="librarySummary">选择知识库，查看已上传的资料。</p>
+  <div id="documentList" class="document-list" aria-live="polite"></div>
+  <div class="pagination"><button class="small-button" id="previousPage" type="button">← 上一页</button><span id="pageLabel">第 1 页</span><button class="small-button" id="nextPage" type="button">下一页 →</button></div>
+  <p class="library-footnote">支持 TXT、Markdown、带文本层的 PDF 和 DOCX，单文件最大 10 MiB。只有处理完成的文档参与问答。</p>
+ </section>
+</main></div>
+<dialog class="base-dialog upload-dialog" id="baseDialog" aria-labelledby="baseDialogTitle">
+ <div class="dialog-heading"><div><p class="eyebrow">KNOWLEDGE COLLECTION</p><h2 id="baseDialogTitle">新建知识库</h2></div><button class="icon-button" id="closeBaseDialog" type="button" aria-label="关闭知识库设置">×</button></div>
+ <form id="baseForm"><label for="baseNameInput">知识库名称</label><input id="baseNameInput" maxlength="100" required placeholder="例如：Java 学习笔记"><label for="baseDescriptionInput">说明（可选）</label><textarea id="baseDescriptionInput" maxlength="1000" rows="4" placeholder="这个知识库收集哪些资料？"></textarea><p class="subtle">资料和问答按知识库独立归属，修改名称不会改变已有资料。</p><p id="baseFormStatus" role="status" class="upload-status"></p><button class="primary-button" id="saveBaseButton" type="submit">创建知识库</button></form>
+</dialog>
+<dialog class="upload-dialog" id="uploadDialog" aria-labelledby="uploadTitle">
+ <div class="dialog-heading"><div><p class="eyebrow">GROW YOUR KNOWLEDGE</p><h2 id="uploadTitle">添加一份新资料</h2></div><button class="icon-button" id="closeUpload" type="button" aria-label="关闭上传窗口">×</button></div>
+ <p class="subtle">将上传到知识库 <strong id="uploadBaseLabel"></strong></p>
+ <form id="uploadForm"><label class="drop-zone" id="dropZone" for="fileInput"><input id="fileInput" type="file" accept=".txt,.md,.pdf,.docx"><span class="upload-symbol">↥</span><strong id="fileTitle">拖放文件到这里，或点击选择</strong><span id="fileMeta">TXT / MD / PDF / DOCX · 最大 10 MiB</span></label><p class="upload-status" id="uploadStatus" role="status">资料处理完成后，即可用于知识库问答。</p><div class="dialog-actions"><button id="uploadSubmit" class="primary-button" type="submit">上传并处理 ↗</button><button id="uploadAsk" class="small-button" type="button" hidden>开始提问 →</button></div></form>
+</dialog>
+<dialog class="source-drawer" id="sourceDrawer" aria-labelledby="sourceTitle"><div class="dialog-heading"><div><p class="eyebrow">SOURCE / EVIDENCE</p><h2 id="sourceTitle">引用来源</h2></div><button class="icon-button" id="closeSource" type="button" aria-label="关闭资料详情">×</button></div><div id="sourceBody" class="source-body"></div></dialog>
+<div class="toast" role="status"></div>
+<template id="assistantMessageTemplate">
+    <article class="message-row assistant-row">
+        <div class="avatar assistant-avatar">A</div>
+        <div class="message-content">
+            <div class="message-meta"><strong>Agent Station</strong><span class="message-time"></span></div>
+            <section class="trace-window" data-expanded="false">
+                <header class="trace-header">
+                    <button class="trace-toggle" type="button" aria-expanded="true">
+                        <span class="trace-pulse"></span>
+                        <span class="trace-title">执行轨迹</span>
+                        <span class="trace-count">0 条记录</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="trace-controls">
+                        <button type="button" data-direction="-1" aria-label="上一条轨迹"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+                        <button type="button" data-direction="1" aria-label="下一条轨迹"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+                    </div>
+                </header>
+                <div class="trace-track" tabindex="0"></div>
+                <div class="trace-empty"><i></i><span>正在建立执行计划…</span></div>
+            </section>
+            <div class="answer-card">
+                <div class="answer-kicker"><span>FINAL RESPONSE</span><i></i></div>
+                <div class="answer-body markdown-body"><div class="typing-state"><span></span><span></span><span></span> 正在整理最终回复</div></div>
+            </div>
+        </div>
+    </article>
+</template>
+
+</body></html>

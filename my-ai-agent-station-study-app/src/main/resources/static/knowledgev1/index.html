@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Knowledge V1 · API Lab</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <a class="brand" href="./" aria-label="Knowledge V1 首页">
+        <span class="brand-mark">K1</span>
+        <span>KNOWLEDGE<br>API LAB</span>
+      </a>
+
+      <section class="connection" aria-labelledby="connection-title">
+        <div class="rail-heading">
+          <span id="connection-dot" class="signal"></span>
+          <h2 id="connection-title">连接设置</h2>
+        </div>
+        <label for="api-base">接口根地址</label>
+        <input id="api-base" type="text" spellcheck="false" autocomplete="off">
+        <label for="knowledge-base">知识库标识</label>
+        <input id="knowledge-base" type="text" value="demo" maxlength="64" spellcheck="false">
+        <button id="test-connection" class="button button-light" type="button">测试连接</button>
+        <p id="connection-copy" class="connection-copy">等待测试</p>
+      </section>
+
+      <nav class="rail-nav" aria-label="页面导航">
+        <a href="#upload"><span>01</span>上传文档</a>
+        <a href="#question"><span>02</span>资料问答</a>
+        <a href="#documents"><span>03</span>文档与切片</a>
+        <a href="#inspector"><span>04</span>响应检查</a>
+      </nav>
+
+      <section class="request-history" aria-labelledby="history-title">
+        <div class="rail-heading">
+          <h2 id="history-title">最近请求</h2>
+          <button id="clear-history" class="text-button" type="button">清空</button>
+        </div>
+        <ol id="request-log">
+          <li class="history-empty">发起请求后将在这里显示。</li>
+        </ol>
+      </section>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <div>
+          <p class="kicker">LOCAL INTERFACE WORKBENCH / V1</p>
+          <h1>把知识库接口<br>逐个跑通。</h1>
+        </div>
+        <div class="hero-note">
+          <span class="number">07</span>
+          <p>覆盖上传、列表、详情、切片、原件与问答接口。每次调用都会保留状态码、耗时和响应体。</p>
+        </div>
+      </header>
+
+      <div id="notice" class="notice" role="status" aria-live="polite">
+        页面已就绪。先测试连接，或直接上传一份资料。
+      </div>
+
+      <section id="upload" class="section-card upload-card">
+        <div class="section-heading">
+          <div><span class="section-no">01</span><p>DOCUMENT INGESTION</p><h2>上传并建立索引</h2></div>
+          <code>POST /documents</code>
+        </div>
+        <form id="upload-form" class="upload-grid">
+          <label id="drop-zone" class="drop-zone" for="file-input">
+            <input id="file-input" type="file" accept=".txt,.md,.pdf,.docx" required>
+            <span class="upload-icon" aria-hidden="true">↥</span>
+            <strong id="file-title">选择文件，或拖放到这里</strong>
+            <span id="file-meta">TXT / MD / PDF / DOCX · 最大 10 MiB</span>
+          </label>
+          <div class="upload-side">
+            <dl class="contract-list">
+              <div><dt>knowledgeBaseId</dt><dd>取左侧当前知识库标识</dd></div>
+              <div><dt>file</dt><dd>multipart/form-data 文件字段</dd></div>
+              <div><dt>处理方式</dt><dd>原件存储、正文切分、双库写入</dd></div>
+            </dl>
+            <button id="upload-button" class="button button-dark" type="submit">上传并索引 <span>↗</span></button>
+          </div>
+        </form>
+        <div id="upload-result" class="result-strip" hidden></div>
+      </section>
+
+      <section id="question" class="section-card question-card">
+        <div class="section-heading">
+          <div><span class="section-no">02</span><p>RETRIEVAL AUGMENTED ANSWER</p><h2>向当前知识库提问</h2></div>
+          <code>POST /questions</code>
+        </div>
+        <form id="question-form">
+          <label for="question-input">问题</label>
+          <textarea id="question-input" rows="4" maxlength="4000" placeholder="例如：这份文档描述了哪些核心流程？" required></textarea>
+          <div class="question-actions">
+            <label for="top-k">召回数量
+              <select id="top-k"><option value="3">3 chunks</option><option value="5" selected>5 chunks</option><option value="10">10 chunks</option></select>
+            </label>
+            <button id="question-button" class="button button-accent" type="submit">检索并回答 <span>↗</span></button>
+          </div>
+        </form>
+        <article id="answer-card" class="answer-card" hidden>
+          <div class="answer-label">MODEL ANSWER</div>
+          <div id="answer-text" class="answer-text"></div>
+          <div class="reference-heading"><h3>参考片段</h3><span id="reference-count"></span></div>
+          <div id="references" class="references"></div>
+        </article>
+      </section>
+
+      <section id="documents" class="section-card">
+        <div class="section-heading">
+          <div><span class="section-no">03</span><p>INDEX INVENTORY</p><h2>文档与切片检查</h2></div>
+          <div class="heading-actions"><code>GET /documents</code><button id="refresh-documents" class="icon-button" type="button" aria-label="刷新文档">↻</button></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>文档</th><th>状态</th><th>大小</th><th>切片</th><th>操作</th></tr></thead>
+            <tbody id="document-rows"><tr><td colspan="5" class="empty-cell">尚未读取文档列表。</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span id="document-total">0 份文档</span>
+          <div><button id="document-prev" type="button" disabled>← 上一页</button><span id="document-page">1 / 1</span><button id="document-next" type="button" disabled>下一页 →</button></div>
+        </div>
+      </section>
+
+      <section id="detail-panel" class="section-card detail-panel" hidden>
+        <div class="section-heading compact">
+          <div><p>DOCUMENT DETAIL & CHUNKS</p><h2 id="detail-title">文档详情</h2></div>
+          <button id="close-detail" class="icon-button" type="button" aria-label="关闭详情">×</button>
+        </div>
+        <dl id="document-detail" class="detail-grid"></dl>
+        <div class="subheading"><div><h3>切片列表</h3><code>GET /documents/{documentId}/chunks</code></div><span id="chunk-total"></span></div>
+        <div id="chunk-list" class="chunk-list"></div>
+        <div class="pager">
+          <span id="chunk-page-label">第 1 页</span>
+          <div><button id="chunk-prev" type="button" disabled>← 上一页</button><button id="chunk-next" type="button" disabled>下一页 →</button></div>
+        </div>
+      </section>
+
+      <section id="inspector" class="section-card inspector">
+        <div class="section-heading compact">
+          <div><span class="section-no">04</span><p>RAW RESPONSE</p><h2>响应检查器</h2></div>
+          <button id="copy-response" class="button button-light" type="button">复制 JSON</button>
+        </div>
+        <div id="response-meta" class="response-meta">还没有可检查的响应</div>
+        <pre id="response-json">{}</pre>
+      </section>
+
+      <footer><span>KNOWLEDGE V1 / LOCAL TEST CLIENT</span><span>Same-origin fetch · No framework · No build step</span></footer>
+    </main>
+  </div>
+</body>
+</html>

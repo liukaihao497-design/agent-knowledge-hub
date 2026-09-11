@@ -1,0 +1,74 @@
+# /usr/local/bin/docker-compose -f /docs/dev-ops/environment/environment-docker-compose-2.4.yml up -d
+version: '3.8'
+# docker-compose -f docker-compose-app.yml up -d
+# 你需要修改system为你自身系统的仓库名
+services:
+  my-ai-agent-station-study:
+    image: system/my-ai-agent-station-study:1.0-SNAPSHOT
+    container_name: my-ai-agent-station-study
+    restart: on-failure
+    ports:
+      - "8091:8091"
+    environment:
+      - TZ=PRC
+      - SERVER_PORT=8091
+    volumes:
+      - ./log:/data/log
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - my-network
+
+  # MCP 服务：CSDN 发帖
+  mcp-server-csdn-app:
+    image: registry.cn-hangzhou.aliyuncs.com/fuzhengwei/mcp-server-csdn-app:1.1
+    container_name: mcp-server-csdn-app
+    restart: always
+    ports:
+      - "8101:8101"
+    volumes:
+      - ./log:/data/log
+    environment:
+      - TZ=PRC
+      - SERVER_PORT=8101
+      - CSDN_API_CATEGORIES=${CSDN_API_CATEGORIES:-Java场景面试宝典}
+      - CSDN_API_COOKIE=${CSDN_API_COOKIE:-}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - my-network
+
+  # MCP 服务：微信公众号通知
+  mcp-server-weixin-app:
+    image: registry.cn-hangzhou.aliyuncs.com/fuzhengwei/mcp-server-weixin-app:1.1
+    container_name: mcp-server-weixin-app
+    restart: always
+    ports:
+      - "8102:8102"
+    volumes:
+      - ./log:/data/log
+    environment:
+      - TZ=PRC
+      - SERVER_PORT=8102
+      - WEIXIN_API_ORIGINAL_ID=${WEIXIN_API_ORIGINAL_ID:-}
+      - WEIXIN_API_APP_ID=${WEIXIN_API_APP_ID:-}
+      - WEIXIN_API_APP_SECRET=${WEIXIN_API_APP_SECRET}
+      - WEIXIN_API_TEMPLATE_ID=${WEIXIN_API_TEMPLATE_ID:-}
+      - WEIXIN_API_TOUSER=${WEIXIN_API_TOUSER:-}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge

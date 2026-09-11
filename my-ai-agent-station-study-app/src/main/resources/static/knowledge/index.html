@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>知识库 · 接口实验台</title>
+  <link rel="stylesheet" href="knowledge.css">
+  <script src="knowledge.js" defer></script>
+</head>
+<body>
+<main>
+  <header><a class="brand" href="./">K / KNOWLEDGE</a><span class="edition">第一版 · 接口实验台</span></header>
+  <section class="intro"><div><p class="eyebrow">从文档到有据可查的回答</p><h1>让每个回答，<br>都有出处。</h1><p class="muted">上传资料，检查切片，再用一个问题验证检索结果。</p></div>
+    <div class="workspace"><label for="base">当前知识库标识</label><input id="base" value="demo" maxlength="64" pattern="[A-Za-z0-9_-]{1,64}" required><p>字母、数字、下划线或短横线。此标识用于资料分组。</p><button id="refresh" class="secondary" type="button">加载文档</button></div>
+  </section>
+  <div id="notice" role="status" aria-live="polite">就绪。请先启用后端知识库功能并完成存储配置。</div>
+  <section class="workbench">
+    <article class="panel"><div class="panel-title"><span class="step">01</span><h2>存入资料</h2></div>
+      <form id="upload-form"><label class="file-box" for="file"><strong>选择一份文档</strong><span>TXT / Markdown / PDF / DOCX · 最大 10 MiB</span><input id="file" type="file" accept=".txt,.md,.pdf,.docx" required></label>
+        <p class="help">原件存入 MinIO；正文切片与向量分别入库。扫描 PDF 请先做 OCR。</p><button id="upload-button" type="submit">上传并建立索引 <span aria-hidden="true">↗</span></button></form>
+      <div id="upload-result" class="result" hidden></div>
+    </article>
+    <article class="panel"><div class="panel-title"><span class="step">02</span><h2>向资料提问</h2></div>
+      <form id="question-form"><label for="question">你想从资料中了解什么？</label><textarea id="question" rows="4" maxlength="4000" placeholder="例如：文档中的上传流程包括哪些步骤？" required></textarea>
+        <div class="form-footer"><label for="topk">引用上限 <select id="topk"><option>3</option><option selected>5</option><option>10</option></select></label><button id="ask-button" type="submit">检索并回答 ↗</button></div></form>
+    </article>
+  </section>
+  <section class="panel answer-panel" id="answer-panel" hidden><p class="eyebrow">ANSWER / 回答与证据</p><div id="answer" class="prose"></div><p class="help">下列片段是提供给模型的参考资料；点击片段可核对出处，原文件以下载方式打开。</p><div id="references" class="references"></div></section>
+  <section class="panel"><div class="section-head"><div><p class="eyebrow">LIBRARY / 文档</p><h2>检查索引状态</h2></div><span id="document-total" class="muted">尚未加载</span></div>
+    <div class="table-scroll"><table><thead><tr><th>文档</th><th>状态</th><th>切片</th><th>操作</th></tr></thead><tbody id="documents"><tr><td colspan="4" class="empty">加载知识库后，文档将显示在这里。</td></tr></tbody></table></div>
+    <nav class="pager" aria-label="文档分页"><button id="doc-prev" class="secondary" disabled>上一页</button><span id="doc-page">第 1 页</span><button id="doc-next" class="secondary" disabled>下一页</button></nav>
+  </section>
+  <section class="panel" id="chunks-panel" hidden><div class="section-head"><div><p class="eyebrow">CHUNKS / 切分检查</p><h2 id="chunk-title">文档切片</h2></div><button id="close-chunks" class="secondary">收起</button></div><div id="chunk-detail" class="help"></div><div id="chunks"></div><nav class="pager" aria-label="切片分页"><button id="chunk-prev" class="secondary">上一页</button><span id="chunk-page"></span><button id="chunk-next" class="secondary">下一页</button></nav></section>
+  <footer>原件 → 文本切分 → 双库保存 → 召回 → 引用回答 <span>KNOWLEDGE V1</span></footer>
+</main>
+</body>
+</html>

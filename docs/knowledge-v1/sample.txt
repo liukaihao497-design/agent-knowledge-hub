@@ -1,0 +1,6 @@
+知识库第一版说明
+
+文档原件保存到 MinIO 的私有桶中。数据库的文档记录保存对象路径、状态和稳定的内容访问入口。
+文档使用 TokenTextSplitter 切分。chunk 正文和 metadata 保存到 MySQL，向量保存到 PostgreSQL 的 knowledge_vector_store 专用表。
+只有状态为 READY 的文档可以参与问答。索引失败的文档标记为 FAILED，回答时必须过滤这些文档。
+回答附带引用编号、chunk 原文和原文件下载入口。用户可以点击引用片段，检查模型回答是否有资料依据。

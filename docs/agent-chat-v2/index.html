@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#f3f0e8">
+    <title>Agent Station · 会话工作台</title>
+    <link rel="stylesheet" href="../dev-ops/nginx/html/css/github.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="../dev-ops/nginx/html/js/marked.min.js"></script>
+    <script defer src="../dev-ops/nginx/html/js/purify.min.js"></script>
+    <script defer src="../dev-ops/nginx/html/js/highlight.min.js"></script>
+    <script defer src="app.js"></script>
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="会话历史">
+        <div class="brand-block">
+            <div class="brand-mark" aria-hidden="true">
+                <span></span><span></span><span></span>
+            </div>
+            <div>
+                <p class="eyebrow">AI WORKSPACE</p>
+                <h1>Agent Station</h1>
+            </div>
+        </div>
+
+        <button class="new-chat-button" id="newChatButton" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <span>开启新会话</span>
+            <kbd>Ctrl K</kbd>
+        </button>
+
+        <div class="history-heading">
+            <span>最近会话</span>
+            <span id="historyCount">0</span>
+        </div>
+        <nav class="history-list" id="historyList" aria-label="最近会话列表"></nav>
+
+        <div class="sidebar-footer">
+            <div class="local-badge"><i></i> 本地历史已开启</div>
+            <button class="text-button danger" id="clearHistoryButton" type="button">清空记录</button>
+        </div>
+    </aside>
+
+    <div class="mobile-backdrop" id="mobileBackdrop"></div>
+
+    <main class="workspace">
+        <header class="topbar">
+            <div class="topbar-title">
+                <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="打开会话列表">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                </button>
+                <div>
+                    <p class="eyebrow">LIVE CONVERSATION</p>
+                    <h2 id="conversationTitle">新的智能会话</h2>
+                </div>
+            </div>
+            <div class="topbar-meta">
+                <div class="connection-status" id="connectionStatus" data-state="ready">
+                    <i></i><span>就绪</span>
+                </div>
+                <button class="icon-button" id="settingsButton" type="button" aria-label="对话设置" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.37a1.7 1.7 0 0 0-1 .63 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1a1.7 1.7 0 0 0-1.1-1.57 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.13 15a1.7 1.7 0 0 0-.63-1 1.7 1.7 0 0 0-1.1-.4H2.3v-4h.1A1.7 1.7 0 0 0 4 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.37 4.13a1.7 1.7 0 0 0 1-.63 1.7 1.7 0 0 0 .4-1.1V2.3h4v.1A1.7 1.7 0 0 0 15 4a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.37 8.37c.17.38.4.72.63 1 .3.35.7.55 1.1.4h.1v4h-.1A1.7 1.7 0 0 0 19.4 15Z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <section class="settings-panel" id="settingsPanel" aria-label="对话设置" hidden>
+            <label>
+                <span>智能体</span>
+                <select id="agentSelect">
+                    <option value="3">Auto Agent · 3</option>
+                    <option value="4" selected>Auto Agent · 4</option>
+                </select>
+            </label>
+            <label>
+                <span>最大执行步数</span>
+                <select id="maxStepSelect">
+                    <option value="1">1 步</option>
+                    <option value="2">2 步</option>
+                    <option value="3">3 步</option>
+                    <option value="5" selected>5 步</option>
+                    <option value="10">10 步</option>
+                </select>
+            </label>
+            <label class="api-field">
+                <span>接口地址</span>
+                <input id="apiUrlInput" value="http://localhost:8099/api/v1/agent/auto_agent" spellcheck="false">
+            </label>
+        </section>
+
+        <section class="conversation" id="conversation" aria-live="polite">
+            <div class="welcome-card" id="welcomeCard">
+                <div class="welcome-index">01</div>
+                <div class="welcome-copy">
+                    <p class="eyebrow">AUTONOMOUS AGENT CONSOLE</p>
+                    <h3>让过程退到幕后，<br>让答案回到对话。</h3>
+                </div>
+                <div class="welcome-orbit" aria-hidden="true"><span>分析</span><span>执行</span><span>监督</span></div>
+            </div>
+            <div class="messages" id="messages"></div>
+        </section>
+
+        <footer class="composer-wrap">
+            <div class="suggestions" id="suggestions" aria-label="问题示例">
+                <button type="button" data-prompt="通过 ES 查询被限流的用户，给出被限流用户列表。">查询限流用户</button>
+                <button type="button" data-prompt="检索小傅哥的相关项目，列出一份学习计划。">制定学习计划</button>
+                <button type="button" data-prompt="分析当前系统日志并总结异常原因。">分析系统日志</button>
+            </div>
+            <form class="composer" id="composer">
+                <textarea id="messageInput" rows="1" maxlength="4000" placeholder="给 Agent Station 发送任务…" aria-label="消息内容"></textarea>
+                <div class="composer-actions">
+                    <span class="session-label" id="sessionLabel">SESSION · NEW</span>
+                    <button class="send-button" id="sendButton" type="submit">
+                        <span>发送</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-4 14-3-6-7-1Z"/><path d="m12 13 7-8"/></svg>
+                    </button>
+                </div>
+            </form>
+            <p class="composer-hint">Enter 发送 · Shift + Enter 换行 · 执行轨迹默认紧凑展示</p>
+        </footer>
+    </main>
+</div>
+
+<template id="assistantMessageTemplate">
+    <article class="message-row assistant-row">
+        <div class="avatar assistant-avatar">A</div>
+        <div class="message-content">
+            <div class="message-meta"><strong>Agent Station</strong><span class="message-time"></span></div>
+            <section class="trace-window" data-expanded="false">
+                <header class="trace-header">
+                    <button class="trace-toggle" type="button" aria-expanded="true">
+                        <span class="trace-pulse"></span>
+                        <span class="trace-title">执行轨迹</span>
+                        <span class="trace-count">0 条记录</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="trace-controls">
+                        <button type="button" data-direction="-1" aria-label="上一条轨迹"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+                        <button type="button" data-direction="1" aria-label="下一条轨迹"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+                    </div>
+                </header>
+                <div class="trace-track" tabindex="0"></div>
+                <div class="trace-empty"><i></i><span>正在建立执行计划…</span></div>
+            </section>
+            <div class="answer-card">
+                <div class="answer-kicker"><span>FINAL RESPONSE</span><i></i></div>
+                <div class="answer-body markdown-body"><div class="typing-state"><span></span><span></span><span></span> 正在整理最终回复</div></div>
+            </div>
+        </div>
+    </article>
+</template>
+</body>
+</html>

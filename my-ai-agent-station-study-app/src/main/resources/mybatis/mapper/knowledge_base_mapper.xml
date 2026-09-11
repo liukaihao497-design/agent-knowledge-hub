@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lkh.infrastructure.dao.IKnowledgeBaseDao">
+    <resultMap id="row" type="com.lkh.infrastructure.dao.po.KnowledgeBase">
+        <id column="knowledge_base_id" property="knowledgeBaseId"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <sql id="columns">knowledge_base_id, name, description, status, create_time, update_time</sql>
+    <insert id="insert">
+        INSERT INTO knowledge_base (knowledge_base_id, name, description, status, create_time, update_time)
+        VALUES (#{knowledgeBaseId}, #{name}, #{description}, #{status}, #{createTime}, #{updateTime})
+    </insert>
+    <select id="find" resultMap="row">
+        SELECT <include refid="columns"/> FROM knowledge_base WHERE knowledge_base_id=#{knowledgeBaseId}
+    </select>
+    <select id="list" resultMap="row">
+        SELECT <include refid="columns"/> FROM knowledge_base
+        <where><if test="status != null">status=#{status}</if></where>
+        ORDER BY create_time DESC, knowledge_base_id DESC LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM knowledge_base
+        <where><if test="status != null">status=#{status}</if></where>
+    </select>
+    <!-- 基础信息和状态分开更新，互不覆盖；文档归属 ID 不提供修改入口。 -->
+    <update id="updateInformation">
+        UPDATE knowledge_base SET name=#{name}, description=#{description}, update_time=#{updateTime}
+        WHERE knowledge_base_id=#{knowledgeBaseId}
+    </update>
+    <update id="updateStatus">
+        UPDATE knowledge_base SET status=#{status}, update_time=#{updateTime}
+        WHERE knowledge_base_id=#{knowledgeBaseId}
+    </update>
+</mapper>

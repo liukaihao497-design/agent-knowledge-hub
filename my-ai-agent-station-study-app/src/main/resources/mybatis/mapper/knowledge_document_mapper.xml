@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lkh.infrastructure.dao.IKnowledgeDocumentDao">
+    <resultMap id="row" type="com.lkh.infrastructure.dao.po.KnowledgeDocument">
+        <id column="document_id" property="documentId"/>
+        <result column="knowledge_base_id" property="knowledgeBaseId"/>
+        <result column="file_name" property="fileName"/>
+        <result column="content_type" property="contentType"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="sha256" property="sha256"/>
+        <result column="bucket_name" property="bucketName"/>
+        <result column="object_key" property="objectKey"/>
+        <result column="content_url" property="contentUrl"/>
+        <result column="status" property="status"/>
+        <result column="chunk_count" property="chunkCount"/>
+        <result column="error_message" property="errorMessage"/>
+        <result column="ext_info" property="extInfo"/>
+        <result column="ext_remark" property="extRemark"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <sql id="columns">document_id, knowledge_base_id, file_name, content_type, file_size, sha256, bucket_name, object_key, content_url, status, chunk_count, error_message, ext_info, ext_remark, create_time, update_time</sql>
+    <insert id="insert">
+        INSERT INTO knowledge_document (document_id, knowledge_base_id, file_name, content_type, file_size, sha256, bucket_name, object_key, content_url, status, chunk_count, error_message, ext_info, ext_remark, create_time, update_time)
+        VALUES (#{documentId}, #{knowledgeBaseId}, #{fileName}, #{contentType}, #{fileSize}, #{sha256}, #{bucketName}, #{objectKey}, #{contentUrl}, #{status}, #{chunkCount}, #{errorMessage}, #{extInfo}, #{extRemark}, #{createTime}, #{updateTime})
+    </insert>
+    <update id="update">
+        UPDATE knowledge_document SET bucket_name=#{bucketName}, object_key=#{objectKey},
+            content_url=#{contentUrl}, status=#{status}, chunk_count=#{chunkCount},
+            error_message=#{errorMessage}, update_time=#{updateTime}
+        WHERE document_id=#{documentId}
+    </update>
+    <select id="find" resultMap="row">
+        SELECT <include refid="columns"/> FROM knowledge_document WHERE document_id=#{documentId}
+    </select>
+    <select id="list" resultMap="row">
+        SELECT <include refid="columns"/> FROM knowledge_document
+        WHERE knowledge_base_id=#{knowledgeBaseId}
+        ORDER BY create_time DESC, document_id DESC LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM knowledge_document WHERE knowledge_base_id=#{knowledgeBaseId}
+    </select>
+</mapper>
